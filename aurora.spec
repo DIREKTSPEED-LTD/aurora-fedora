@@ -1,8 +1,3 @@
-# This spec requires python 2.7. Currently, we're depending on a custom
-# python27 rpm that installs to /usr/python2.7. Change the spec accordingly
-# for your environment. You'll also need the mesos python egg (tested against
-# version 0.22.0).
-#
 # To build:
 #
 # This spec is intended for use with tito/mock, but can be adapted for the
@@ -36,24 +31,26 @@
 %define install_base /opt
 
 Name:      aurora
-Version:   0.5.0
+Version:   0.7
 Release:   1%{?dist}.rc0
 Summary:   A framework for scheduling long-running services against Apache Mesos
 License:   ASL 2.0
 URL:       http://%{name}.incubator.apache.org/
-Source0:   aurora-0.5.0.tar.gz
+Source0:   aurora-0.7.0.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: java-1.7.0-openjdk
-BuildRequires: java-1.7.0-openjdk-devel
+BuildRequires: java-1.8.0-openjdk
+BuildRequires: java-1.8.0-openjdk-devel
 BuildRequires: mesos
-BuildRequires: python27-devel
-BuildRequires: python27-setuptools
+BuildRequires: python-devel
+BuildRequires: python-setuptools
 BuildRequires: tar
 BuildRequires: unzip
 BuildRequires: which
 BuildRequires: zip
+BuildRequires: wget
+BuildRequires: curl
 
 %description
 Apache Aurora is a service scheduler that runs on top of Mesos, enabling you
@@ -70,11 +67,11 @@ Provides aurora_admin and aurora_client binaries.
 %package scheduler
 Summary: The master scheduler portion of Aurora.
 Group: Applications/System
-Requires: java-1.7.0-openjdk
-Requires: java-1.7.0-openjdk-devel
+Requires: java-1.8.0-openjdk
+Requires: java-1.8.0-openjdk-devel
 Requires: mesos
 Requires: mesos-python
-Requires: python27
+Requires: python
 
 %description scheduler
 Apache Aurora is a service scheduler that runs on top of Mesos, enabling you
@@ -86,7 +83,7 @@ Summary: A simple Pythonic process management framework for Mesos chroots
 Group: Applications/System
 Requires: mesos
 Requires: mesos-python
-Requires: python27
+Requires: python
 
 %description thermos
 Thermos a simple process management framework used for orchestrating
@@ -96,9 +93,16 @@ dependent processes within a single Mesos chroot.
 %setup -q
 
 %build
+# Download and add python egg if not exists
+mkdir -p ./.pants.d/python/eggs/
+cd ./.pants.d/python/eggs/
+# TODO Implament if file exists method out of systemctl-inst command next time
+wget http://downloads.mesosphere.io/master/centos/7/mesos-0.21.1-py2.7-linux-x86_64.egg
+
+
 # Add custom python2.7 to path.
-export PATH=/usr/python2.7/bin:$PATH
-export JAVA_HOME=/usr
+# export PATH=/usr/python2.7/bin:$PATH
+# export JAVA_HOME=/usr
 
 # The main aurora distribution.
 ./gradlew distZip
